@@ -1,5 +1,5 @@
 from django.urls import path
-from core.views import AnalysisByIdView, AnalysisListView, AnalysisByToolView
+from core.views import AnalysisByIdView, AnalysisListView
 
 urlpatterns = [
      path('analysis/<int:id>/', 
@@ -8,7 +8,4 @@ urlpatterns = [
      path('analysis/',
           AnalysisListView.as_view(),
           name='analysis-paginated'),
-     path('analysis/<str:tool>/tool/',
-          AnalysisByToolView.as_view(),
-          name='analysis-by-tool'),
 ]
