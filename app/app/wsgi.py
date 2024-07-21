@@ -8,17 +8,8 @@ https://docs.djangoproject.com/en/3.2/howto/deployment/wsgi/
 """
 
 import os
-import injector
 from django.core.wsgi import get_wsgi_application
-from core.service import AnalysisFinderService
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 
 application = get_wsgi_application()
-
-def configure(binder: injector.Binder) -> None:
-    binder.bind(AnalysisFinderService, 
-                to=AnalysisFinderService, 
-                scope=injector.singleton)
-
-INJECTOR = injector.Injector(configure)
