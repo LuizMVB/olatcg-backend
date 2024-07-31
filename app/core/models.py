@@ -111,6 +111,31 @@ class BiopythonBioAlignPairwiseAlignerOutput(models.Model):
         null=True
     )
 
+class BlastnInput(models.Model):
+    database = models.CharField(max_length=100, null=False)
+    evalue = models.FloatField(null=False)
+    gap_open = models.IntegerField(null=False)
+    gap_extend = models.IntegerField(null=False)
+    penalty = models.IntegerField(null=False)
+    input_file = models.BinaryField(null=False)
+    analysis = models.OneToOneField(
+        Analysis, 
+        on_delete=models.DO_NOTHING, 
+        related_name='blastn_input',
+        null=True,
+        blank=True
+    )
+    
+class BlastnOutput(models.Model):
+    output_file = models.BinaryField(null=False)
+    
+    input = models.ForeignKey(
+        BlastnInput,
+        on_delete=models.DO_NOTHING,
+        related_name='outputs',
+        null=True
+    )
+    
 class Taxonomy(models.Model):
     name = models.CharField(max_length=500, null=True)
     description = models.CharField(max_length=100000, null=True)
@@ -157,8 +182,9 @@ class Alignment(models.Model):
 
 class BiologicalSequence(models.Model):
     bases = models.CharField(max_length=100000, null=True)
-    country_origin = models.CharField(max_length=100, null=True)
-    external_database_id = models.CharField(max_length=100, null=True)
+    description = models.CharField(max_length=100, null=True)
+    title = models.CharField(max_length=300, null=True)
+    query_sequence_id = models.CharField(max_length=100, null=True)
     type = models.CharField(
         max_length=14,
         choices=BiologicalSequenceType.choices,

@@ -2,17 +2,17 @@ from rest_framework import serializers
 from .constants import BLAST_DB_PATHS
 from .models import (
     Taxonomy, Alignment, Analysis, 
-    BiologicalSequence, Experiment, 
+    BiologicalSequence, BlastnInput,
+    Experiment, Tool,
     BiopythonBioAlignPairwiseAlignerInput, 
-    BiopythonBioAlignPairwiseAlignerOutput,
-    Tool
+    BiopythonBioAlignPairwiseAlignerOutput
 )
 
 class BiologicalSequenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = BiologicalSequence
         fields = '__all__'
- 
+
 class AnalysisHomologyRequestSerializer(serializers.Serializer):
     database = serializers.CharField()
     type = serializers.CharField()

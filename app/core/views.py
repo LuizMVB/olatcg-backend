@@ -1,7 +1,14 @@
-import os, tempfile
+import os, tempfile, subprocess
 from django.db import transaction
+from django.core.files import File
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, ListAPIView
+from app.pagination import CustomPagination
+from app.responses import WrappedResponse
+from rest_framework import filters
+from rest_framework.response import Response
+from rest_framework import status
+from .filters import GenericQueryParameterListFilter
 from .serializers import (
     AnalysisSerializer, 
     AnalysisAlignmentRequestSerializer, 
@@ -14,15 +21,10 @@ from .models import (
     BiologicalSequence, 
     BiopythonBioAlignPairwiseAlignerInput, 
     BiopythonBioAlignPairwiseAlignerOutput, 
-    Experiment
+    Experiment,
+    BlastnInput,
+    BlastnOutput
 )
-from app.pagination import CustomPagination
-from app.responses import WrappedResponse
-from rest_framework import filters
-from rest_framework.response import Response
-from .filters import GenericQueryParameterListFilter
-from rest_framework import status
-from Bio.Blast.Applications import NcbiblastnCommandline
 
 class ExperimentListCreateView(ListCreateAPIView):
     queryset = Experiment.objects.all()
@@ -128,35 +130,58 @@ class AnalysisAlignmentView(APIView):
             status.HTTP_201_CREATED)
 
 class AnalysisHomologyView(APIView):
-    def run_blast(self, query_sequence, db, evalue, gapopen, gapextend, penalty):
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.fasta') as query_file:
-            query_file.write(f">query_sequence\n{query_sequence}\n".encode())
-            query_file_path = query_file.name
-        
+    
+    def create_temp_file(self, content, suffix):
+        """Helper function to create a temporary file."""
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+        temp_file.write(content.encode())
+        temp_file_path = temp_file.name
+        temp_file.close()
+        return temp_file_path
+
+    def run_blast(self, query_file_path, db, evalue, gapopen, gapextend, penalty):
+        """Runs the BLASTn command with the specified parameters."""
         with tempfile.NamedTemporaryFile(delete=False, suffix='.out') as output_file:
             output_file_path = output_file.name
 
-        blastn_cline = NcbiblastnCommandline(
-            query=query_file_path,
-            db=db,
-            evalue=evalue,
-            gapopen=gapopen,
-            gapextend=gapextend,
-            penalty=penalty,
-            outfmt='6 qseqid sseqid pident length qlen slen score evalue qseq sseq',
-            out=output_file_path
-        )
+        blastn_command = [
+            'blastn',
+            '-query', query_file_path,
+            '-db', db,
+            '-evalue', str(evalue),
+            '-gapopen', str(gapopen),
+            '-gapextend', str(gapextend),
+            '-penalty', str(penalty),
+            '-outfmt', '11',
+            '-out', output_file_path
+        ]
 
-        stdout, stderr = blastn_cline()
-        os.remove(query_file_path)  # Remove the query temporary file
+        result = subprocess.run(blastn_command, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise subprocess.CalledProcessError(result.returncode, blastn_command, output=result.stdout, stderr=result.stderr)
 
-        with open(output_file_path, 'r') as f:
-            blast_results = f.readlines()
+        return output_file_path
 
-        os.remove(output_file_path)  # Remove the output temporary file
-        return blast_results
+    def format_blast_output(self, blast_output_path):
+        """Formats the BLAST output using the blast_formatter command."""
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.txt') as formatted_output_file:
+            formatted_output_path = formatted_output_file.name
 
-    def parse_blast_results(self, blast_results):
+        blast_formatter_command = [
+            'blast_formatter',
+            '-archive', blast_output_path,
+            '-outfmt', '6 qseqid sseqid pident length qlen slen score evalue qseq sseq',
+            '-out', formatted_output_path
+        ]
+
+        formatter_result = subprocess.run(blast_formatter_command, capture_output=True, text=True)
+        if formatter_result.returncode != 0:
+            raise subprocess.CalledProcessError(formatter_result.returncode, blast_formatter_command, output=formatter_result.stdout, stderr=formatter_result.stderr)
+
+        return formatted_output_path
+
+    def parse_blast_results(self, blast_results, query_titles):
+        """Parses the BLAST results into a structured format."""
         parsed_results = {}
         for line in blast_results:
             cols = line.strip().split("\t")
@@ -172,173 +197,98 @@ class AnalysisHomologyView(APIView):
                 'query_sequence': cols[8],
                 'subject_sequence': cols[9]
             }
-            
+
             if query_id not in parsed_results:
                 parsed_results[query_id] = {
                     'query_id': query_id,
-                    'query_title': '',  # Placeholder for query title if available
+                    'query_title': query_titles.get(query_id, ''),  # Get query title from the dictionary
                     'query_len': hit['query_length'],
                     'hits': []
                 }
-            
+
             parsed_results[query_id]['hits'].append(hit)
-        
-        # Convert the dictionary to a list of search objects
+
         return list(parsed_results.values())
 
+    def perform_homology_analysis(self, data, all_results, query_titles, query_file_path):
+        blast_outfmt11_path = self.run_blast(query_file_path,
+                                            data['database'],
+                                            data['evalue'],
+                                            data['gap_open'],
+                                            data['gap_extend'],
+                                            data['penalty'])
+            
+        blast_outfmt6_path = self.format_blast_output(blast_outfmt11_path)
+
+        with open(blast_outfmt6_path, 'r') as f:
+            blast_results = f.readlines()
+
+        parsed_results = self.parse_blast_results(blast_results, query_titles)
+        
+        if len(parsed_results) > 0:
+            all_results.extend(parsed_results)
+            
+        return blast_outfmt11_path,blast_outfmt6_path
+
+    def create_query_file(self, data, query_titles):
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.fasta') as query_file:
+            for sequence in data['biological_sequences']:
+                title = sequence.get('title', '')
+                bases = sequence.get('bases')
+                if bases:
+                    query_id = f"query_{len(query_titles) + 1}"
+                    query_titles[query_id] = title
+                    query_file.write(f">{query_id} {title}\n{bases}\n".encode())
+            query_file_path = query_file.name
+            
+        if os.path.getsize(query_file_path) == 0:
+            return Response({"error": "No valid sequences provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return query_file_path
+    
     @transaction.atomic
     def post(self, request, analysis_id, *args, **kwargs):
-        request_serializer = AnalysisHomologyRequestSerializer(data=request.data, context={'analysis_id': analysis_id})
-    
+        """Handles the POST request to run the homology analysis."""
+        
+        request_serializer = AnalysisHomologyRequestSerializer(
+            data=request.data, 
+            context={'analysis_id': analysis_id})
+
         if not request_serializer.is_valid():
             return Response(request_serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+        analysis = Analysis.objects.get(id=analysis_id)
+        data = request_serializer.validated_data
         
-        data = request_serializer.data
         all_results = []
+        query_titles = {}
 
-        for sequence in data['biological_sequences']:
-            bases = sequence.get('bases')
-            
-            if not bases:
-                continue
-
-            blast_results = self.run_blast(bases, 
-                                           data['database'],
-                                           data['evalue'], 
-                                           data['gap_open'], 
-                                           data['gap_extend'], 
-                                           data['penalty'])
+        query_file_path = self.create_query_file(data, query_titles)
         
-            parsed_results = self.parse_blast_results(blast_results)
-            
-            if len(parsed_results) > 0:
-                all_results.extend(parsed_results)
+        with open(query_file_path, 'rb') as query_file:
+            blastn_input = BlastnInput.objects.create(
+                analysis=analysis,
+                database=data['database'],
+                evalue=data['evalue'],
+                gap_open=data['gap_open'],
+                gap_extend=data['gap_extend'],
+                penalty=data['penalty'],
+                input_file=query_file.read()
+            )
+            blastn_input.save()
+
+        blast_outfmt11_path, blast_outfmt6_path = self.perform_homology_analysis(
+            data, all_results, query_titles, query_file_path)
+        
+        with open(blast_outfmt11_path, 'rb') as blast_output_file:
+            blastn_output = BlastnOutput.objects.create(
+                input=blastn_input,
+                output_file=blast_output_file.read()
+            )
+            blastn_output.save()
+        
+        os.remove(query_file_path)
+        os.remove(blast_outfmt11_path)
+        os.remove(blast_outfmt6_path)
 
         return Response(all_results, status=status.HTTP_200_OK)
-
-    
-# class AnalysisHomologyView(APIView):
-#     def load_nodes(self, nodes_file):
-#         nodes = {}
-#         with open(nodes_file) as f:
-#             for line in f:
-#                 parts = line.strip().split('|')
-#                 tax_id = parts[0].strip()
-#                 parent_id = parts[1].strip()
-#                 rank = parts[2].strip()
-#                 nodes[tax_id] = {'parent': parent_id, 'rank': rank}
-#         return nodes
-
-#     def load_names(self, names_file):
-#         names = {}
-#         with open(names_file) as f:
-#             for line in f:
-#                 parts = line.strip().split('|')
-#                 tax_id = parts[0].strip()
-#                 name = parts[1].strip()
-#                 name_class = parts[3].strip()
-#                 if name_class == "scientific name":
-#                     names[tax_id] = name
-#         return names
-
-#     def get_lineage(self, tax_id, nodes, names):
-#         lineage = []
-#         while tax_id != '1':  # Continue while tax_id is not root
-#             name = names.get(tax_id, 'unknown')
-#             lineage.append(name)
-#             if tax_id not in nodes:
-#                 break  # Stop if tax_id not found in nodes
-#             parent_id = nodes[tax_id]['parent']
-#             tax_id = parent_id
-
-#         if tax_id == '1':
-#             lineage.append('root')
-
-#         return '; '.join(lineage[::-1])
-
-#     def run_blast(self, query_sequence, db, output_file):
-#         with open('temp_query.fasta', 'w') as f:
-#             f.write(f">query_sequence\n{query_sequence}\n")
-        
-#         blastn_cline = NcbiblastnCommandline(
-#             query="temp_query.fasta",
-#             db=db,
-#             evalue=0.001,
-#             outfmt=5,  # Formato de saída XML
-#             out=output_file
-#         )
-        
-#         stdout, stderr = blastn_cline()
-#         os.remove('temp_query.fasta')  # Remove the temporary file
-
-#         temp_output_file = tempfile.NamedTemporaryFile(delete=False).name
-#         shutil.copyfile(output_file, temp_output_file)
-#         os.remove(output_file)
-        
-#         return temp_output_file
-
-#     def parse_blast_output(self, blast_output, nodes, names):
-#         with open(blast_output) as result_handle:
-#             blast_records = NCBIXML.parse(result_handle)
-            
-#             results = []
-            
-#             for blast_record in blast_records:
-#                 record = {
-#                     'query': blast_record.query,
-#                     'alignments': []
-#                 }
-#                 for alignment in blast_record.alignments:
-#                     accession = alignment.accession
-#                     tax_id = alignment.hit_id.split("|")[-1]
-#                     taxonomy_lineage = self.get_lineage(tax_id, nodes, names)
-                    
-#                     alignment_data = {
-#                         'title': alignment.title,
-#                         'length': alignment.length,
-#                         'taxonomy': taxonomy_lineage,
-#                         'hsps': []
-#                     }
-#                     for hsp in alignment.hsps:
-#                         hsp_data = {
-#                             'evalue': hsp.expect,
-#                             'query_seq': hsp.query,
-#                             'match_seq': hsp.match,
-#                             'subject_seq': hsp.sbjct
-#                         }
-#                         alignment_data['hsps'].append(hsp_data)
-#                     record['alignments'].append(alignment_data)
-#                 results.append(record)
-            
-#             return results
-
-#     @transaction.atomic
-#     def post(self, request, analysis_id, *args, **kwargs):
-#         data = request.data
-#         database_key = data.get('database', 'default')
-#         biological_sequences = data.get('biological_sequences', [])
-        
-#         db_path = BLAST_DB_PATHS.get(database_key)
-#         if not db_path:
-#             return Response({'error': 'Invalid database specified'}, status=400)
-        
-#         nodes_file = NODES_FILE
-#         names_file = NAMES_FILE
-#         nodes = self.load_nodes(nodes_file)
-#         names = self.load_names(names_file)
-        
-#         all_results = []
-
-#         for sequence in biological_sequences:
-#             bases = sequence.get('bases')
-#             if not bases:
-#                 continue
-            
-#             blast_output_file = f"blast_output_{bases[:10]}.xml"
-#             blast_output = self.run_blast(bases, db_path, blast_output_file)
-#             results = self.parse_blast_output(blast_output, nodes, names)
-#             all_results.extend(results)
-        
-#         results_json = json.dumps(all_results, indent=4)
-        
-#         return Response(json.loads(results_json))
