@@ -1,9 +1,8 @@
-'''
-We recommend running the local.requirements.txt with psycopg2 omitted only if you just 
-need the dependencies to set up your virtual environment locally. If you want to run the 
-project locally, you will need to set up PostgreSQL as shown in the RUN process in our 
-Dockerfile.
-'''
+# We recommend running the local.requirements.txt with psycopg2 omitted only if you just 
+# need the dependencies to set up your virtual environment locally. If you want to run the 
+# project locally, you will need to set up PostgreSQL as shown in the RUN process in our 
+# Dockerfile.
+
 asgiref==3.8.1
 Django==3.2.25
 django-filter==23.5

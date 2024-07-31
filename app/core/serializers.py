@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .constants import BLAST_DB_PATHS
 from .models import (
     Taxonomy, Alignment, Analysis, 
     BiologicalSequence, Experiment, 
@@ -11,7 +12,37 @@ class BiologicalSequenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = BiologicalSequence
         fields = '__all__'
+ 
+class AnalysisHomologyRequestSerializer(serializers.Serializer):
+    database = serializers.CharField()
+    type = serializers.CharField()
+    biological_sequences = BiologicalSequenceSerializer(many=True)
+    evalue = serializers.FloatField()
+    gap_open = serializers.IntegerField()
+    gap_extend = serializers.IntegerField()
+    penalty = serializers.IntegerField()
+    
+    def validate(self, data):
+        analysis_id = int(self.context.get('analysis_id'))
         
+        try:            
+            analysis = Analysis.objects.get(pk=analysis_id)
+        except:
+            raise serializers.ValidationError('Analysis not found: try another id')
+            
+        if analysis.type != 'HOMOLOGY':
+            raise serializers.ValidationError('Analysis\' type is not equals to "HOMOLOGY"')
+    
+        if data['database'] not in BLAST_DB_PATHS.keys():
+            raise serializers.ValidationError('Invalid database specified')
+        
+        data['database'] = BLAST_DB_PATHS.get(data['database'])
+        
+        if data['penalty'] > 0:
+            raise serializers.ValidationError('Penalty must be negative')
+    
+        return super().validate(data)
+           
 class AnalysisAlignmentRequestSerializer(serializers.Serializer):
     mode = serializers.CharField()
     match_score = serializers.IntegerField()
