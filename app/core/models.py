@@ -137,8 +137,9 @@ class BlastnOutput(models.Model):
     )
     
 class Taxonomy(models.Model):
-    name = models.CharField(max_length=500, null=True)
-    description = models.CharField(max_length=100000, null=True)
+    external_tax_id = models.IntegerField(null=True)
+    title = models.CharField(max_length=500, null=True)
+    lineage = models.CharField(max_length=100000, null=True)
     analysis = models.ForeignKey(
         Analysis,
         on_delete=models.DO_NOTHING,
@@ -182,9 +183,7 @@ class Alignment(models.Model):
 
 class BiologicalSequence(models.Model):
     bases = models.CharField(max_length=100000, null=True)
-    description = models.CharField(max_length=100, null=True)
-    title = models.CharField(max_length=300, null=True)
-    query_sequence_id = models.CharField(max_length=100, null=True)
+    external_sequence_id = models.CharField(max_length=100, null=True)
     type = models.CharField(
         max_length=14,
         choices=BiologicalSequenceType.choices,

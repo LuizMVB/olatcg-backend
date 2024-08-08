@@ -1,4 +1,3 @@
-#!/bin/bash
 set -ex
 
 echo "Updating package lists"
