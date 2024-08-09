@@ -22,4 +22,7 @@ urlpatterns = [
      path('analysis/<int:analysis_id>/homology/',
           views.AnalysisHomologyView.as_view(),
           name='analysis-homology'),
+     path('analysis/<int:analysis_id>/tree/',
+          views.AnalysisTreeView.as_view(),
+          name='analysis-tree-view'),
 ]

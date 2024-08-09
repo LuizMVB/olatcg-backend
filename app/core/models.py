@@ -10,6 +10,7 @@ class AnalysisStatus(models.TextChoices):
 class AnalysisType(models.TextChoices):
     ALIGNMENT = 'ALIGNMENT', _('Alignment')
     HOMOLOGY = 'HOMOLOGY', _('Homology')
+    TAXONOMY_TREE = 'TAXONOMY_TREE', _('Taxonomy Tree')
 
 class BiopythonBioAlignPairwiseAlignerMode(models.TextChoices):
     GLOBAL = 'global', _('Global')
@@ -39,7 +40,7 @@ class Analysis(models.Model):
     title = models.CharField(max_length=20, null=True)
     description = models.CharField(max_length=100, null=True)
     type = models.CharField(
-        max_length=9,
+        max_length=13,
         choices=AnalysisType.choices,
         default=AnalysisType.ALIGNMENT
     )
@@ -49,11 +50,9 @@ class Analysis(models.Model):
         default=AnalysisStatus.STARTED,
         blank=True
     )
-    tool = models.ForeignKey(
-        Tool,
-        on_delete=models.DO_NOTHING,
+    tools = models.ManyToManyField(
+        Tool, 
         related_name='analyses',
-        null=True,
         blank=True
     )
     generated_from_analysis = models.OneToOneField(
@@ -136,6 +135,58 @@ class BlastnOutput(models.Model):
         null=True
     )
     
+class MuscleInput(models.Model):
+    analysis = models.ForeignKey(
+        Analysis,
+        on_delete=models.CASCADE,
+        related_name='muscle_inputs',
+        null=True,
+        blank=True
+    )
+    input_file = models.BinaryField(null=True, blank=True)
+
+class MuscleOutput(models.Model):
+    analysis = models.ForeignKey(
+        Analysis,
+        on_delete=models.CASCADE,
+        related_name='muscle_outputs',
+        null=True,
+        blank=True
+    )
+    input = models.ForeignKey(
+        MuscleInput,
+        on_delete=models.DO_NOTHING,
+        related_name='outputs',
+        null=True
+    )
+    output_file = models.BinaryField(null=True, blank=True)
+
+class FastTreeInput(models.Model):
+    analysis = models.ForeignKey(
+        Analysis,
+        on_delete=models.CASCADE,
+        related_name='fasttree_inputs',
+        null=True,
+        blank=True
+    )
+    input_file = models.BinaryField(null=True, blank=True)
+
+class FastTreeOutput(models.Model):
+    analysis = models.ForeignKey(
+        Analysis,
+        on_delete=models.CASCADE,
+        related_name='fasttree_outputs',
+        null=True,
+        blank=True
+    )
+    input = models.ForeignKey(
+        FastTreeInput,
+        on_delete=models.DO_NOTHING,
+        related_name='outputs',
+        null=True
+    )
+    output_file = models.BinaryField(null=True, blank=True)
+
 class Taxonomy(models.Model):
     external_tax_id = models.IntegerField(null=True)
     title = models.CharField(max_length=500, null=True)

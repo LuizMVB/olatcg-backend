@@ -3,7 +3,7 @@ set -ex
 echo "Updating package lists"
 apt-get update
 echo "Installing dependencies"
-apt-get install -y wget libgomp1 ncbi-blast+
+apt-get install -y wget libgomp1 ncbi-blast+ fasttree muscle
 
 echo "Creating directories"
 mkdir -p /blast/taxonomy /blast/sequences /blast/db

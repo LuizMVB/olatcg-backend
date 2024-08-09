@@ -16,9 +16,17 @@ services:
     env_file: ./env/app.env
     depends_on:
       - db
+      - redis
 
   db:
     image: postgres:13-alpine
     env_file: ./env/db.env
     ports:
       - "5432:5432"
+
+  redis:
+    image: redis:7.2.4
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+  

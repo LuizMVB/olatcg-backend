@@ -21,4 +21,4 @@ class CustomExceptionMiddleware(MiddlewareMixin):
             }
             status = 500
 
-        return JsonResponse(response_data, status=status)
+        return JsonResponse({"data": response_data}, status=status)
