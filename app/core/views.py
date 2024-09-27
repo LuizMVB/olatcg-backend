@@ -34,7 +34,7 @@ class AnalysisListView(ListAPIView):
     pagination_class = CustomPagination
     filter_backends = [filters.OrderingFilter, GenericQueryParameterListFilter]
     ordering_fields = ['id']
-    filterset_fields = ['id', 'experiment']
+    filterset_fields = ['id', 'experiment', 'type']
         
 class AnalysisByExperimentListCreateView(ListCreateAPIView):
     serializer_class = AnalysisSerializer
