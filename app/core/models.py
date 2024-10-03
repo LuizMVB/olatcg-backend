@@ -230,7 +230,7 @@ class Alignment(models.Model):
             seqB=biological_sequences[1]['bases'],
         )
         
-        return aligner, alignment_results
+        return aligner, alignment_results[0]
 
 class BiologicalSequence(models.Model):
     bases = models.CharField(max_length=100000, null=True)

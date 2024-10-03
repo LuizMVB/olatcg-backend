@@ -1,7 +1,5 @@
 import os, tempfile, subprocess
 from Bio.Blast import NCBIXML
-from Bio import Phylo
-from io import StringIO
 from django.db import transaction
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, ListAPIView
@@ -14,7 +12,6 @@ from .filters import GenericQueryParameterListFilter
 from .constants import *
 from .serializers import *
 from .models import *
-from Bio.Phylo.TreeConstruction import DistanceTreeConstructor, _DistanceMatrix
 
 class ExperimentListCreateView(ListCreateAPIView):
     queryset = Experiment.objects.all()
@@ -75,7 +72,6 @@ class AnalysisByIdView(APIView):
                     AnalysisSerializer)
     
 class AnalysisAlignmentView(APIView):
-    
     @transaction.atomic
     def post(self, request, analysis_id, *args, **kwargs):
         request_serializer = AnalysisAlignmentRequestSerializer(data=request.data, 
@@ -102,16 +98,15 @@ class AnalysisAlignmentView(APIView):
             open_gap_score=aln_input_info.open_gap_score,
             extend_gap_score=aln_input_info.extend_gap_score
         )
-        
-        for aln_result in aln_output_info:
-            BiopythonBioAlignPairwiseAlignerOutput.objects.create(
-                input=bio_python_aligner_input,
-                score=aln_result.score,
-                target=aln_result.target,
-                query=aln_result.query,
-                aligned=aln_result.aligned,
-                shape=aln_result.shape
-            )
+
+        BiopythonBioAlignPairwiseAlignerOutput.objects.create(
+            input=bio_python_aligner_input,
+            score=aln_output_info.score,
+            target=aln_output_info.target,
+            query=aln_output_info.query,
+            aligned=aln_output_info.aligned,
+            shape=aln_output_info.shape
+        )
         
         response_serializer = AnalysisSerializer(analysis)
         
@@ -215,7 +210,6 @@ class AnalysisHomologyView(APIView):
         taxonomies = []
         alignments = []
         biological_sequences = []
-
         for line in blast_results:
             cols = line.strip().split("\t")
             query_id = cols[0]
