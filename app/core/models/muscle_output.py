@@ -1,5 +1,6 @@
 from django.db import models
-from core.models import Analysis, MuscleInput
+from core.models.analysis import Analysis
+from core.models.muscle_input import MuscleInput
 
 class MuscleOutput(models.Model):
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE, related_name='muscle_outputs', null=True, blank=True)

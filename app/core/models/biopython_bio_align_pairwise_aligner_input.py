@@ -1,5 +1,6 @@
 from django.db import models
-from core.models import BiopythonBioAlignPairwiseAlignerModeChoices, Analysis
+from core.models.biopython_bio_align_pairwise_aligner_mode_choices import BiopythonBioAlignPairwiseAlignerModeChoices
+from core.models.analysis import Analysis
 
 class BiopythonBioAlignPairwiseAlignerInput(models.Model):
     mode = models.CharField(

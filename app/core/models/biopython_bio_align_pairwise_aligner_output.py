@@ -1,5 +1,5 @@
 from django.db import models
-from core.models import BiopythonBioAlignPairwiseAlignerInput
+from core.models.biopython_bio_align_pairwise_aligner_input import BiopythonBioAlignPairwiseAlignerInput
 
 class BiopythonBioAlignPairwiseAlignerOutput(models.Model):
     score = models.IntegerField(null=True)

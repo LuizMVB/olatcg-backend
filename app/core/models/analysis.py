@@ -1,5 +1,9 @@
 from django.db import models
-from core.models import AnalysisTypeChoices, AnalysisStatusChoices, Experiment, Tool
+
+from core.models.analysis_type_choices import AnalysisTypeChoices
+from core.models.analysis_status_choices import AnalysisStatusChoices
+from core.models.experiment import Experiment
+from core.models.tool import Tool
 
 class Analysis(models.Model):
     title = models.CharField(max_length=20, null=True)

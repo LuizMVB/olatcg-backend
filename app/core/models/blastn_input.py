@@ -1,5 +1,5 @@
 from django.db import models
-from core.models import Analysis
+from core.models.analysis import Analysis
 
 class BlastnInput(models.Model):
     database = models.CharField(max_length=100, null=False)

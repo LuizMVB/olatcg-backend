@@ -1,6 +1,6 @@
 from django.db import models
 
-from core.models import Analysis
+from core.models.analysis import Analysis
 
 
 class FastTreeInput(models.Model):

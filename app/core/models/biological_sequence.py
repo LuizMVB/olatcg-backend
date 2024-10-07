@@ -1,6 +1,6 @@
 from django.db import models
-from core.models import BiologicalSequenceTypeChoices, Alignment
-
+from core.models.biological_sequence_type_choices import BiologicalSequenceTypeChoices
+from core.models.alignment import Alignment
 
 class BiologicalSequence(models.Model):
     bases = models.CharField(max_length=100000, null=True)

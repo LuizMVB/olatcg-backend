@@ -1,6 +1,7 @@
 from django.db import models
 
-from core.models import Analysis, FastTreeInput
+from core.models.analysis import Analysis
+from core.models.fast_tree_input import FastTreeInput
 
 class FastTreeOutput(models.Model):
     analysis = models.ForeignKey(

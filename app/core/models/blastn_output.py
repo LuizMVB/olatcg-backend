@@ -1,5 +1,5 @@
 from django.db import models
-from core.models import BlastnInput
+from core.models.blastn_input import BlastnInput
 
 class BlastnOutput(models.Model):
     output_file = models.BinaryField(null=False)

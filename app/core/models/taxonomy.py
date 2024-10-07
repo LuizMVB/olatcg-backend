@@ -1,5 +1,5 @@
 from django.db import models
-from core.models import Analysis
+from core.models.analysis import Analysis
 
 class Taxonomy(models.Model):
     external_tax_id = models.IntegerField(null=True)

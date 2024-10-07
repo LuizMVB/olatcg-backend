@@ -1,6 +1,6 @@
 from django.db import models
 from Bio.Align import PairwiseAligner
-from core.models import Taxonomy, Analysis
+from . import Taxonomy, Analysis
 
 class Alignment(models.Model):
     taxonomy = models.ForeignKey(

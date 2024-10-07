@@ -3,7 +3,7 @@ from .biopython_bio_align_pairwise_aligner_input import BiopythonBioAlignPairwis
 from .biopython_bio_align_pairwise_aligner_output import BiopythonBioAlignPairwiseAlignerOutput
 from .blastn_input import BlastnInput
 from .blastn_output import BlastnOutput
-from .biopython_mode_choices import BiopythonBioAlignPairwiseAlignerModeChoices
+from .biopython_bio_align_pairwise_aligner_mode_choices import BiopythonBioAlignPairwiseAlignerModeChoices
 from .analysis_status_choices import AnalysisStatusChoices
 from .analysis_type_choices import AnalysisTypeChoices
 from .biological_sequence_type_choices import BiologicalSequenceTypeChoices
@@ -14,6 +14,6 @@ from .taxonomy import Taxonomy
 from .tool import Tool
 from .alignment import Alignment
 from .biological_sequence import BiologicalSequence
-from .biopython_mode_choices import BiopythonBioAlignPairwiseAlignerModeChoices
+from .biopython_bio_align_pairwise_aligner_mode_choices import BiopythonBioAlignPairwiseAlignerModeChoices
 from .fast_tree_input import FastTreeInput
 from .fast_tree_output import FastTreeOutput
