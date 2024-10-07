@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from .constants import BLAST_DB_PATHS
-from .models import (
-    Taxonomy, Alignment, Analysis, 
-    BiologicalSequence, BlastnInput,
+from core.models import (
+    Taxonomy, Alignment, Analysis,
+    BiologicalSequence,
     Experiment, Tool,
     BiopythonBioAlignPairwiseAlignerInput, 
     BiopythonBioAlignPairwiseAlignerOutput

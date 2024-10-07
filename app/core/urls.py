@@ -1,28 +1,32 @@
 from django.urls import path
-from django.conf import settings
-from django.conf.urls.static import static
-from core import views
+from core.views.analysis_alignment_view import *
+from core.views.analysis_by_experiment_list_create_view import *
+from core.views.analysis_by_id_view import *
+from core.views.analysis_homology_view import *
+from core.views.analysis_list_view import *
+from core.views.analysis_tree_view import *
+from core.views.experiment_list_create_view import *
 
 urlpatterns = [
      path('experiment/',
-          views.ExperimentListCreateView.as_view(),
+          ExperimentListCreateView.as_view(),
           name='experiment'),
      path('experiment/<int:experiment_id>/analysis/',
-          views.AnalysisByExperimentListCreateView.as_view(),
+          AnalysisByExperimentListCreateView.as_view(),
           name='analysis-by-experiment-id'),
      path('analysis/',
-          views.AnalysisListView.as_view(),
+          AnalysisListView.as_view(),
           name='analysis'),
      path('analysis/<int:id>/', 
-         views.AnalysisByIdView.as_view(), 
+         AnalysisByIdView.as_view(),
          name='analysis-by-id'),
      path('analysis/<int:analysis_id>/alignment/',
-          views.AnalysisAlignmentView.as_view(),
+          AnalysisAlignmentView.as_view(),
           name='analysis-alignment'),
      path('analysis/<int:analysis_id>/homology/',
-          views.AnalysisHomologyView.as_view(),
+          AnalysisHomologyView.as_view(),
           name='analysis-homology'),
      path('analysis/<int:analysis_id>/tree/',
-          views.AnalysisTreeView.as_view(),
+          AnalysisTreeView.as_view(),
           name='analysis-tree-view'),
 ]
