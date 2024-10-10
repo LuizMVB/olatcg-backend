@@ -14,9 +14,9 @@ class Analysis(models.Model):
         default=AnalysisTypeChoices.ALIGNMENT
     )
     status = models.CharField(
-        max_length=14,
+        max_length=21,
         choices=AnalysisStatusChoices.choices,
-        default=AnalysisStatusChoices.STARTED,
+        default=AnalysisStatusChoices.WAITING_FOR_EXECUTION,
         blank=True
     )
     tools = models.ManyToManyField(Tool, related_name='analyses', blank=True)

@@ -17,4 +17,4 @@ class FastTreeOutput(models.Model):
         related_name='outputs',
         null=True
     )
-    output_file = models.BinaryField(null=True, blank=True)
+    output_file = models.CharField(max_length=100, null=True, blank=True)

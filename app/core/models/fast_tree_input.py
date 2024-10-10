@@ -11,4 +11,4 @@ class FastTreeInput(models.Model):
         null=True,
         blank=True
     )
-    input_file = models.BinaryField(null=True, blank=True)
+    input_file = models.CharField(max_length=100, null=True, blank=True)
