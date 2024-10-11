@@ -74,7 +74,7 @@ class AnalysisTreeView(APIView):
                 fasta_file.write(f">{query_id}\n{sequence}\n".encode())
 
         # Move the generated FASTA file to storage
-        fasta_file_path = self.store_file(fasta_file.name, analysis_id, 'tree_best_hits', 'fasta')
+        fasta_file_path = self.store_file(fasta_file.name, analysis_id, 'tree_muscle_input', 'fasta')
 
         return fasta_file_path
 
