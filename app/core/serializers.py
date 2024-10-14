@@ -4,8 +4,8 @@ from core.models import (
     Taxonomy, Alignment, Analysis,
     BiologicalSequence,
     Experiment, Tool,
-    BiopythonBioAlignPairwiseAlignerInput, 
-    BiopythonBioAlignPairwiseAlignerOutput
+    BiopythonBioAlignPairwiseAlignerInput,
+    BiopythonBioAlignPairwiseAlignerOutput, FastTreeInput, FastTreeOutput
 )
 
 class BiologicalSequenceSerializer(serializers.ModelSerializer):
@@ -110,59 +110,87 @@ class ToolSerializer(serializers.ModelSerializer):
         model = Tool
         fields = '__all__'
 
+class FastTreeOutputSerializer(serializers.ModelSerializer):
+    file_content = serializers.SerializerMethodField()  # Define a SerializerMethodField for the file content
+
+    class Meta:
+        model = FastTreeOutput
+        fields = '__all__'
+
+    # This method returns the content of the file
+    def get_file_content(self, obj):
+        try:
+            with open(obj.output_file, 'r') as file:  # Access the file input path from obj
+                return file.read()
+        except FileNotFoundError:
+            return None  # Handle case when the file is not found
+        except Exception as e:
+            return str(e)  # Handle any other exceptions (optional)
+
+class FastTreeInputSerializer(serializers.ModelSerializer):
+    outputs = FastTreeOutputSerializer(many=True)
+
+    class Meta:
+        model = FastTreeInput
+        fields = '__all__'
+
 class AnalysisSerializer(serializers.ModelSerializer):
     taxonomies = TaxonomySerializer(many=True, read_only=True)
     alignments = AlignmentSerializer(many=True, read_only=True)
     biopython_bio_align_pairwise_aligner_input = BiopythonBioAlignPairwiseAlignerInputSerializer(required=False)
+    fasttree_inputs = FastTreeInputSerializer(required=False, many=True)
     tool = ToolSerializer(read_only=True)
     experiment = serializers.PrimaryKeyRelatedField(queryset=Experiment.objects.all(), required=False)
-    generated_from_analysis = serializers.PrimaryKeyRelatedField(queryset=Analysis.objects.all(), required=False, allow_null=True)
+    generated_from_analysis = serializers.PrimaryKeyRelatedField(queryset=Analysis.objects.all(), required=False,
+                                                                 allow_null=True)
 
     class Meta:
         model = Analysis
         fields = '__all__'
-        
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
+        # Verifica se há taxonomies
         if 'taxonomies' in representation and representation['taxonomies']:
-            representation.pop('biopython_bio_align_pairwise_aligner_input', None)
+            # Remove alignments, mas mantém o campo biopython_bio_align_pairwise_aligner_input
             representation.pop('alignments', None)
-
             for tax in representation['taxonomies']:
                 tax.pop('analysis')
-
             return representation
-        
+
+        # Verifica se há alignments
         if 'alignments' in representation and representation['alignments']:
+            # Remove taxonomies, mas mantém biopython_bio_align_pairwise_aligner_input
             representation.pop('taxonomies', None)
             if 'biopython_bio_align_pairwise_aligner_input' in representation:
-                representation['biopython_bio_align_pairwise_aligner_input'].pop('analysis')
+                representation['biopython_bio_align_pairwise_aligner_input'].pop('analysis', None)
 
             for aln in representation['alignments']:
-                aln.pop('analysis')
-                aln.pop('taxonomy')
-            
+                aln.pop('analysis', None)
+                aln.pop('taxonomy', None)
+
             return representation
-        
+
+        # Se não houver taxonomies nem alignments, remove campos desnecessários
         representation.pop('taxonomies', None)
         representation.pop('alignments', None)
-        representation.pop('biopython_bio_align_pairwise_aligner_input', None)
         representation.pop('tool', None)
 
         return representation
 
     def validate(self, data):
         experiment_id = int(self.context.get('experiment_id'))
-        
+
         if experiment_id is not None:
             try:
                 Experiment.objects.get(id=experiment_id)
             except Experiment.DoesNotExist:
                 raise serializers.ValidationError('Experiment not found: try another id')
-    
+
         return super().validate(data)
-    
+
+
 class ExperimentSerializer(serializers.ModelSerializer):
     analyses = AnalysisSerializer(many=True, required=False)
     

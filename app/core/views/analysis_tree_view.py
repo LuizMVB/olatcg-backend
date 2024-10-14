@@ -11,14 +11,14 @@ from rest_framework.response import Response
 
 from core.models import Analysis, AnalysisTypeChoices, AnalysisStatusChoices, MuscleInput, MuscleOutput, FastTreeInput, \
     FastTreeOutput, BlastnInput, BlastnOutput
-from core.serializers import AnalysisTreeSerializer
+from core.serializers import AnalysisTreeSerializer, FastTreeOutputSerializer
 
 
 class AnalysisTreeView(APIView):
 
     def get_storage_directory(self, analysis_id):
         """Creates a directory for storing the files related to the tree analysis."""
-        storage_dir = os.path.join(os.environ.get('STORAGE_FILE', '/mnt/data/blastn_storage'), f'tree_{analysis_id}')
+        storage_dir = os.path.join(os.environ.get('STORAGE_FILE', '/mnt/data/blastn_storage'), f'analysis_{analysis_id}')
         os.makedirs(storage_dir, exist_ok=True)
         return storage_dir
 
@@ -134,7 +134,6 @@ class AnalysisTreeView(APIView):
 
         # Save MuscleOutput
         MuscleOutput.objects.create(
-            analysis=phylo_tree_analysis,
             input=muscle_input,
             output_file=aligned_fasta_file_path  # Store the aligned file path
         )
@@ -147,7 +146,6 @@ class AnalysisTreeView(APIView):
 
         # Save FastTreeOutput
         FastTreeOutput.objects.create(
-            analysis=phylo_tree_analysis,
             input=fasttree_input,
             output_file=nwk_file_path  # Store the tree file path
         )
@@ -172,6 +170,18 @@ class AnalysisTreeView(APIView):
 
         if analysis.type != 'HOMOLOGY':
             raise serializers.ValidationError('Analysis type is not "HOMOLOGY"; Taxonomy Tree can only be generated from "HOMOLOGY" analysis')
+
+        try:
+            analysis_generated_from_this = Analysis.objects.get(generated_from_analysis=analysis_id)
+
+            if analysis_generated_from_this is not None:
+                fasttree_outputs = FastTreeOutput.objects.filter(input__analysis=analysis_generated_from_this).all()
+                nwk_file_path = fasttree_outputs[0].output_file
+                with open(nwk_file_path, 'r') as nwk_file:
+                    nwk_content = nwk_file.read().strip()
+                    return Response(data={'nwk': nwk_content, 'analysis_id': analysis_generated_from_this.id})
+        except Analysis.DoesNotExist:
+            pass
 
         # Deserialize the request data
         serializer = AnalysisTreeSerializer(data=request.data)

@@ -1,8 +1,6 @@
 from django.db import models
-from core.models.analysis import Analysis
 from core.models.muscle_input import MuscleInput
 
 class MuscleOutput(models.Model):
-    analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE, related_name='muscle_outputs', null=True, blank=True)
     input = models.ForeignKey(MuscleInput, on_delete=models.DO_NOTHING, related_name='outputs', null=True)
     output_file = models.CharField(max_length=100, null=True, blank=True)
