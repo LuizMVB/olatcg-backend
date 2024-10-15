@@ -4,7 +4,9 @@ from app.responses import WrappedResponse
 from rest_framework.response import Response
 from rest_framework import status
 from core.serializers import AnalysisAlignmentRequestSerializer, AnalysisSerializer
-from core.models import Analysis, Alignment, BiologicalSequence, BiopythonBioAlignPairwiseAlignerInput, BiopythonBioAlignPairwiseAlignerOutput
+from core.models import Analysis, Alignment, BiologicalSequence, BiopythonBioAlignPairwiseAlignerInput, \
+    BiopythonBioAlignPairwiseAlignerOutput, AnalysisStatusChoices
+
 
 class AnalysisAlignmentView(APIView):
     @transaction.atomic
@@ -42,6 +44,9 @@ class AnalysisAlignmentView(APIView):
             aligned=aln_output_info.aligned,
             shape=aln_output_info.shape
         )
+
+        analysis.status = AnalysisStatusChoices.EXECUTION_SUCCEEDED
+        analysis.save()
 
         response_serializer = AnalysisSerializer(analysis)
 
