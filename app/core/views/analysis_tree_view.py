@@ -99,19 +99,22 @@ class AnalysisTreeView(APIView):
 
     def run_fasttree(self, aligned_fasta_file_path, analysis_id):
         """Executes the fasttree CLI and saves the Newick tree."""
+        print(f"Running FastTree on file: {aligned_fasta_file_path}")
         with tempfile.NamedTemporaryFile(delete=False, suffix='.nwk') as nwk_file:
             fasttree_command = [
                 'fasttree',
                 '-nt', aligned_fasta_file_path
             ]
-
+            print(f"Running FastTree command: {' '.join(fasttree_command)}")
             result = subprocess.run(fasttree_command, text=True, stdout=nwk_file)
 
             if result.returncode != 0:
+                print(f"FastTree error: {result.stderr}")
                 raise subprocess.CalledProcessError(result.returncode, fasttree_command)
 
         # Move the Newick file to storage
         nwk_file_path = self.store_file(nwk_file.name, analysis_id, 'tree', 'nwk')
+        print(f"FastTree output stored at: {nwk_file_path}")
 
         return nwk_file_path
 
