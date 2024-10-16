@@ -12,4 +12,4 @@ class BiopythonBioAlignPairwiseAlignerInput(models.Model):
     mismatch_score = models.IntegerField(null=False, default=-1)
     open_gap_score = models.IntegerField(null=False, default=-2)
     extend_gap_score = models.IntegerField(null=False, default=-1)
-    analysis = models.OneToOneField(Analysis, on_delete=models.DO_NOTHING, related_name='biopython_input', null=True, blank=True)
+    analysis = models.OneToOneField(Analysis, on_delete=models.DO_NOTHING, related_name='biopython_bio_align_pairwise_aligner_input', null=True, blank=True)
