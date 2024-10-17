@@ -3,6 +3,7 @@ from core.models.biological_sequence_type_choices import BiologicalSequenceTypeC
 from core.models.alignment import Alignment
 
 class BiologicalSequence(models.Model):
+    title = models.CharField(max_length=20, null=True)
     bases = models.CharField(max_length=100000, null=True)
     external_sequence_id = models.CharField(max_length=100, null=True)
     type = models.CharField(
