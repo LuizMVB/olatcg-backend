@@ -2,13 +2,14 @@ import os
 from typing import Dict
 import pika
 import json
+from .constants import RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
 
 class RabbitmqPublisher:
     def __init__(self, exchange, routing_key) -> None:
         self.__host = "rabbitmq"
         self.__port = 5672
-        self.__username = os.environ.get("RABBITMQ_DEFAULT_USER")
-        self.__password = os.environ.get("RABBITMQ_DEFAULT_PASS")
+        self.__username = RABBITMQ_DEFAULT_USER
+        self.__password = RABBITMQ_DEFAULT_PASS
         self.__exchange = exchange
         self.__routing_key = routing_key
         self.__channel = self.__create_channel()
