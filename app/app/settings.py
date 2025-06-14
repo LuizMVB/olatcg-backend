@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'django_injector',
     'corsheaders',
     'core',
-    'drf_spectacular'
+    'drf_spectacular',
+    'rest_framework.authtoken'
 ]
 
 CACHES = {
@@ -141,7 +142,13 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'core.authentication.ExpiringTokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
 }
 
 SPECTACULAR_SETTINGS = {

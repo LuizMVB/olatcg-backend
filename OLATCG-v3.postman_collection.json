@@ -1,0 +1,623 @@
+{
+	"info": {
+		"_postman_id": "566b0d6f-ffdf-4aa8-9d5b-bd487e98be5d",
+		"name": "OLATCG-v3",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23158365"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"belkian\",\n    \"email\": \"belkian@bard.faeria\",\n    \"password\": \"minhasenhasecreta\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base-path}}/auth/register/",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"auth",
+								"register",
+								""
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "Generated from cURL: curl -X POST http://localhost:8000/experiment/ \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"title\": \"Novo Experimento\", \"description\": \"Descrição do experimento\"}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"if (response.token) {",
+									"    pm.environment.set(\"token\", response.token);",
+									"    console.log(\"Token salvo como variável 'token':\", response.token);",
+									"} else {",
+									"    console.warn(\"Token não encontrado na resposta.\");",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"belkian\",\n    \"password\": \"minhasenhasecreta\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base-path}}/auth/login/",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"auth",
+								"login",
+								""
+							]
+						},
+						"description": "Generated from cURL: curl -X POST http://localhost:8000/experiment/ \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"title\": \"Novo Experimento\", \"description\": \"Descrição do experimento\"}'"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Experiment",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Novo Experimento\",\n    \"description\": \"Descrição do experimento\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base-path}}/experiment/",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"experiment",
+								""
+							]
+						},
+						"description": "Generated from cURL: curl -X POST http://localhost:8000/experiment/ \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"title\": \"Novo Experimento\", \"description\": \"Descrição do experimento\"}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Read (List)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base-path}}/experiment/?ordering=-id&id__in=1,2,3,4",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"experiment",
+								""
+							],
+							"query": [
+								{
+									"key": "ordering",
+									"value": "-id"
+								},
+								{
+									"key": "id__in",
+									"value": "1,2,3,4"
+								}
+							]
+						},
+						"description": "Generated from cURL: curl -X GET http://localhost:8000/experiment/ \\\n  -H \"Content-Type: application/json\""
+					},
+					"response": [
+						{
+							"name": "Read (List) - Parâmetros de Ordem e Filtro",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base-path}}/experiment/?ordering=-id&id__in=31,30",
+									"host": [
+										"{{base-path}}"
+									],
+									"path": [
+										"experiment",
+										""
+									],
+									"query": [
+										{
+											"key": "ordering",
+											"value": "-id"
+										},
+										{
+											"key": "id__in",
+											"value": "31,30"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Read (Detail)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base-path}}/experiment/1",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"experiment",
+								"1"
+							]
+						},
+						"description": "Generated from cURL: curl -X GET http://localhost:8000/experiment/ \\\n  -H \"Content-Type: application/json\""
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Atualizado\",\n    \"description\": \"Descrição atualizada\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base-path}}/experiment/1/",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"experiment",
+								"1",
+								""
+							]
+						},
+						"description": "Generated from cURL: curl -X PUT http://localhost:8000/experiment/1/ \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"title\": \"Experimento Atualizado\", \"description\": \"Descrição atualizada\"}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base-path}}/experiment/1/",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"experiment",
+								"1",
+								""
+							]
+						},
+						"description": "Generated from cURL: curl -X DELETE http://localhost:8000/experiment/1/ \\\n  -H \"Content-Type: application/json\""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Analysis",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Nova Análise\",\n    \"type\": \"PAIRWISE_ALIGNMENT\",\n    \"parameters\": {\n        \"sequence_a\": \"ACGTTGAC\",\n        \"sequence_b\": \"ACGAC\",\n        \"mode\": \"global\",\n        \"match_score\": -1,\n        \"mismatch_score\": -2,\n        \"open_gap_score\": -2,\n        \"extend_gap_score\": -1\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base-path}}/experiment/1/analysis/",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"experiment",
+								"1",
+								"analysis",
+								""
+							]
+						},
+						"description": "Generated from cURL: curl -X POST http://localhost:8000/experiment/ \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"title\": \"Novo Experimento\", \"description\": \"Descrição do experimento\"}'"
+					},
+					"response": [
+						{
+							"name": "Create - Pairwise Alignment",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Nova Análise\",\n    \"type\": \"PAIRWISE_ALIGNMENT\",\n    \"parameters\": {\n        \"sequence_a\": \"ACGTTGAC\",\n        \"sequence_b\": \"ACGAC\",\n        \"mode\": \"global\",\n        \"match_score\": -1,\n        \"mismatch_score\": -2,\n        \"open_gap_score\": -2,\n        \"extend_gap_score\": -1\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base-path}}/experiment/1/analysis/",
+									"host": [
+										"{{base-path}}"
+									],
+									"path": [
+										"experiment",
+										"1",
+										"analysis",
+										""
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "Create - Homology",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Nova Análise\",\n    \"type\": \"HOMOLOGY_SEARCH\",\n    \"parameters\": {\n        \"database\": \"default\",\n        \"type\": \"blastp\",\n        \"sequences\": [\n            \"ACGTTGAC\",\n            \"ACGAC\"\n        ],\n        \"evalue\": 0.001,\n        \"gap_open\": 5,\n        \"gap_extend\": 2,\n        \"penalty\": -3\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base-path}}/experiment/1/analysis/",
+									"host": [
+										"{{base-path}}"
+									],
+									"path": [
+										"experiment",
+										"1",
+										"analysis",
+										""
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Read (List)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base-path}}/experiment/1/analysis/?ordering=-id&id__in=1,2,3",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"experiment",
+								"1",
+								"analysis",
+								""
+							],
+							"query": [
+								{
+									"key": "ordering",
+									"value": "-id"
+								},
+								{
+									"key": "id__in",
+									"value": "1,2,3"
+								}
+							]
+						},
+						"description": "Generated from cURL: curl -X GET http://localhost:8000/experiment/ \\\n  -H \"Content-Type: application/json\""
+					},
+					"response": [
+						{
+							"name": "Read (List) - Parâmetros de Ordem e Filtro",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base-path}}/experiment/1/analysis/?ordering=-id&id__in=2,3",
+									"host": [
+										"{{base-path}}"
+									],
+									"path": [
+										"experiment",
+										"1",
+										"analysis",
+										""
+									],
+									"query": [
+										{
+											"key": "ordering",
+											"value": "-id"
+										},
+										{
+											"key": "id__in",
+											"value": "2,3"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Read (Detail)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base-path}}/experiment/1/analysis/1",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"experiment",
+								"1",
+								"analysis",
+								"1"
+							]
+						},
+						"description": "Generated from cURL: curl -X GET http://localhost:8000/experiment/ \\\n  -H \"Content-Type: application/json\""
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Atualizado\",\n    \"description\": \"Descrição atualizada\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base-path}}/experiment/1/analysis/1/",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"experiment",
+								"1",
+								"analysis",
+								"1",
+								""
+							]
+						},
+						"description": "Generated from cURL: curl -X PUT http://localhost:8000/experiment/1/ \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"title\": \"Experimento Atualizado\", \"description\": \"Descrição atualizada\"}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base-path}}/experiment/1/analysis/1/",
+							"host": [
+								"{{base-path}}"
+							],
+							"path": [
+								"experiment",
+								"1",
+								"analysis",
+								"1",
+								""
+							]
+						},
+						"description": "Generated from cURL: curl -X DELETE http://localhost:8000/experiment/1/ \\\n  -H \"Content-Type: application/json\""
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "Token {{token}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "Authorization",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
