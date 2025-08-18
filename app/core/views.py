@@ -15,7 +15,7 @@ from .strategy_factory import StrategyFactory
 from .strategies import ExecutionType
 from .authentication import ExpiringTokenAuthentication 
 
-# ===================== AUTENTICAÇÃO =======================
+# ===================== AUTHENTICATION =======================
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -28,15 +28,18 @@ class LoginView(ObtainAuthToken):
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
-        token = Token.objects.get(key=response.data['token'])
+        token_key = response.data.get('token') if response.data else None
+        if not token_key:
+            return Response({'error': 'Invalid token response'}, status=status.HTTP_400_BAD_REQUEST)
+        token = Token.objects.get(key=token_key)
         return Response({
             'token': token.key,
-            'user_id': token.user_id,
+            'user_id': token.user.id,
             'username': token.user.username
         })
 
 
-# ===================== EXPERIMENTOS =======================
+# ===================== EXPERIMENTS =======================
 
 class ExperimentViewSet(viewsets.ModelViewSet):
     authentication_classes = [ExpiringTokenAuthentication]
@@ -53,7 +56,7 @@ class ExperimentViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-# ===================== ANÁLISES =======================
+# ===================== ANALYSIS =======================
 
 class AnalysisViewSet(viewsets.ModelViewSet):
     authentication_classes = [ExpiringTokenAuthentication]

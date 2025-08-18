@@ -5,7 +5,7 @@ from .constants import PAIRWISE_ALIGNMENT_COMMAND_TEMPLATE, BLAST_DB_PATHS, BLAS
 from .rabbitmq_producer import RabbitmqPublisher
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Dict
+from typing import Optional
 
 class ExecutionType(str, Enum):
     SYNC = "SYNC"
@@ -13,8 +13,8 @@ class ExecutionType(str, Enum):
 
 @dataclass
 class AnalysisExecutionResult:
-    command: str = None
-    result: Dict = None
+    command: Optional[str] = None
+    result: object = None
     file: Optional[str] = None
     type: ExecutionType = ExecutionType.SYNC
 
@@ -50,7 +50,7 @@ class AnalysisExecutionStrategy(ABC):
         pass
 
     @abstractmethod
-    def _perform_analysis(self, analysis: Analysis):
+    def _perform_analysis(self, analysis: Analysis) -> AnalysisExecutionResult:
         pass
 
 
@@ -138,6 +138,7 @@ class HomologySearchStrategy(AnalysisExecutionStrategy):
             raise ValueError('Penalty must be negative')
     
     def _perform_analysis(self, analysis: Analysis) -> AnalysisExecutionResult:
+        analysis.parameters['database'] = BLAST_DB_PATHS[analysis.parameters['database']]
         publisher = RabbitmqPublisher(exchange=BLASTN_EXCHANGE, routing_key=BLASTN_ROUTING_KEY)
         publisher.send_message({
             'analysis_id': analysis.id,

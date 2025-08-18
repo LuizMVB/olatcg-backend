@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class TimestampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         abstract = True
@@ -63,7 +63,7 @@ class AnalysisInput(TimestampedModel):
     )
 
 class AnalysisOutput(TimestampedModel):
-    results = models.JSONField(null=False)
+    results = models.JSONField(null=True)
     file = models.CharField(max_length=1000, null=True)
     input = models.ForeignKey(
         AnalysisInput,

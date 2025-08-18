@@ -5,7 +5,7 @@ from rest_framework.authtoken.models import Token
 from django.utils import timezone
 
 class ExpiringTokenAuthentication(TokenAuthentication):
-    token_lifetime = timedelta(hours=1)
+    token_lifetime = timedelta(minutes=15)
 
     def authenticate_credentials(self, key):
         try:
