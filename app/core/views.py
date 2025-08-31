@@ -80,7 +80,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        analysis = serializer.save(experiment=experiment)
+        analysis: Analysis = serializer.save(experiment=experiment)
 
         try:
             strategy = StrategyFactory.get_strategy(analysis.type)
@@ -91,17 +91,17 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
             analysis.status = AnalysisStatusChoices.SUCCEEDED
-            analysis.save()
+            analysis.save(update_fields=['status'])
 
             analysis_input = AnalysisInput.objects.create(
                 command=execution.command,
-                analysis=analysis
+                analysis=analysis,
             )
 
             AnalysisOutput.objects.create(
                 results=execution.result,
-                file=None,
-                input=analysis_input
+                file=execution.file,
+                input=analysis_input,
             )
 
             headers = self.get_success_headers(serializer.data)
@@ -109,5 +109,5 @@ class AnalysisViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             analysis.status = AnalysisStatusChoices.FAILED
-            analysis.save()
+            analysis.save(update_fields=['status'])
             raise e

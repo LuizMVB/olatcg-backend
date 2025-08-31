@@ -2,7 +2,7 @@ from .strategies import (
     AnalysisExecutionStrategy,
     PairwiseAlignmentStrategy,
     HomologySearchStrategy,
-    # TaxonomyTreeStrategy
+    TaxonomyTreeStrategy
 )
 from .models import AnalysisTypeChoices
 
@@ -11,7 +11,7 @@ class StrategyFactory:
     _strategies = {
         AnalysisTypeChoices.PAIRWISE_ALIGNMENT: PairwiseAlignmentStrategy(),
         AnalysisTypeChoices.HOMOLOGY_SEARCH: HomologySearchStrategy(),
-        # AnalysisTypeChoices.TAXONOMY_TREE: TaxonomyTreeStrategy(),
+        AnalysisTypeChoices.TAXONOMY_TREE: TaxonomyTreeStrategy(),
     }
 
     @staticmethod

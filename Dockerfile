@@ -7,9 +7,7 @@ ENV PYTHONUNBUFFERED=1
 
 COPY requirements.txt .
 COPY setup.sh .
-COPY ./build /build
 COPY ./app /app
-COPY ./blast /blast
 
 WORKDIR /app
 
